@@ -21,6 +21,11 @@ The project aims to predict weekly demand for resort restaurant menu items using
       </a>
     </td>
     <td width="150px">
+      <a href="https://github.com/isshoman123" target="_blank">
+        <img src="" alt="" />
+      </a>
+    </td>
+    <td width="150px">
       <a href="https://github.com/dongsinwoo" target="_blank">
         <img src="https://avatars.githubusercontent.com/dongsinwoo" alt="dongsinwoo" />
       </a>
@@ -34,6 +39,9 @@ The project aims to predict weekly demand for resort restaurant menu items using
   <tr align="center">
     <td>
       김재원
+    </td>
+    <td>
+      고보성
     </td>
     <td>
       박예진
