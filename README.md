@@ -1,0 +1,2 @@
+# AI_Forecasting_Food_and_Restaurant_Menu_Demand
+LG_Aimers_Hackathon
