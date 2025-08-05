@@ -26,7 +26,7 @@ set_seed(42)
 LOOKBACK, PREDICT, BATCH_SIZE, EPOCHS = 28, 7, 16, 50
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# --- 한국 공휴일 2023~2024 예시 ---
+# --- 공휴일 2023~2024 ---
 holidays_2023_2024 = [
     "2023-01-01", "2023-01-21", "2023-01-22", "2023-01-23", "2023-01-24",
     "2023-03-01", "2023-05-05", "2023-05-27", "2023-05-29", "2023-06-06",
@@ -40,9 +40,8 @@ holidays_2023_2024 = [
 ]
 holidays = pd.to_datetime(holidays_2023_2024)
 
-# --- 도메인 피처 추가 함수 ---
+# --- 도메인 피처 추가 ---
 def add_date_features(df):
-    # 날짜 정리: 평가 데이터는 TEST_00+N일 형식, train은 yyyy-mm-dd 형식
     try:
         df['영업일자_dt'] = pd.to_datetime(df['영업일자'])
     except Exception:
@@ -177,4 +176,4 @@ if __name__ == "__main__":
         return final_df
 
     submission = convert_to_submission_format(full_pred_df, sample_submission)
-    submission.to_csv('improved_submission.csv', index=False, encoding='utf-8-sig')
+    submission.to_csv('baseline_submission.csv', index=False, encoding='utf-8-sig')
