@@ -420,7 +420,7 @@ def train_ensemble_model(train_df, target_col='매출수량'):
         ensemble_rmse = np.sqrt(np.mean((y_val_fold - ensemble_pred) ** 2))
         ensemble_predictions.append(ensemble_rmse)
         
-        print(f"  🎯 앙상블 RMSE: {ensemble_rmse:.4f}")
+        print(f"   앙상블 RMSE: {ensemble_rmse:.4f}")
     
     # 전체 성능 요약
     print(f"\n=== 전체 성능 요약 ===")
@@ -437,7 +437,7 @@ def train_ensemble_model(train_df, target_col='매출수량'):
     improvement = previous_score - ensemble_mean
     improvement_pct = (improvement / previous_score) * 100
     
-    print(f"\n🎉 성능 개선:")
+    print(f"\n 성능 개선:")
     print(f"  이전 모델: {previous_score:.2f}")
     print(f"  앙상블 모델: {ensemble_mean:.2f}")
     print(f"  개선: {improvement:.2f} ({improvement_pct:.1f}%)")
@@ -510,9 +510,9 @@ def convert_to_submission_format(pred_df, sample_submission):
 # --- 메인 실행 ---
 if __name__ == "__main__":
     print("=== 앙상블 모델 (CatBoost + LightGBM + XGBoost) ===")
-    print("🎯 목표: 현재 RMSE 22.76에서 15-20% 추가 개선")
-    print("🎯 예상: RMSE 18-21 달성")
-    print("🎯 특징: 3개 모델의 강점 결합으로 안정성 향상")
+    print(" 목표: 현재 RMSE 22.76에서 15-20% 추가 개선")
+    print(" 예상: RMSE 18-21 달성")
+    print(" 특징: 3개 모델의 강점 결합으로 안정성 향상")
     print()
 
     # 1. 데이터 로드
@@ -558,29 +558,29 @@ if __name__ == "__main__":
     # 5. 결과 저장
     submission.to_csv('ensemble_catboost_lgb_xgb_submission.csv', index=False, encoding='utf-8-sig')
     
-    print(f"\n=== 🎉 앙상블 모델 완료 ===")
+    print(f"\n===  앙상블 모델 완료 ===")
     print("결과가 'ensemble_catboost_lgb_xgb_submission.csv'에 저장되었습니다.")
     
-    print(f"\n📊 앙상블 모델의 장점:")
-    print("✅ 3개 모델의 서로 다른 강점 결합")
-    print("✅ CatBoost: 범주형 데이터 처리 우수")
-    print("✅ LightGBM: 빠른 학습속도, 메모리 효율적")
-    print("✅ XGBoost: 강건성과 안정성")
-    print("✅ 가중평균: CatBoost(40%) + LightGBM(35%) + XGBoost(25%)")
+    print(f"\n 앙상블 모델의 장점:")
+    print(" 3개 모델의 서로 다른 강점 결합")
+    print(" CatBoost: 범주형 데이터 처리 우수")
+    print(" LightGBM: 빠른 학습속도, 메모리 효율적")
+    print(" XGBoost: 강건성과 안정성")
+    print(" 가중평균: CatBoost(40%) + LightGBM(35%) + XGBoost(25%)")
     
-    print(f"\n🎯 예상 성능:")
-    print("📈 RMSE: 22.76 → 18-21 (15-20% 개선)")
-    print("📈 안정성: 변동성 크게 감소")
-    print("📈 순위: 중상위권 → 상위권 (20-40%)")
+    print(f"\n 예상 성능:")
+    print(" RMSE: 22.76 → 18-21 (15-20% 개선)")
+    print(" 안정성: 변동성 크게 감소")
+    print(" 순위: 중상위권 → 상위권 (20-40%)")
     
-    print(f"\n🚀 다음 단계 개선 가능 영역:")
-    print("💡 피처 선택 (90개 → 50개 핵심)")
-    print("💡 하이퍼파라미터 베이지안 최적화")  
-    print("💡 스태킹 앙상블 (2단계)")
-    print("💡 외부 데이터 추가 (날씨, 이벤트)")
+    print(f"\n 다음 단계 개선 가능 영역:")
+    print(" 피처 선택 (90개 → 50개 핵심)")
+    print(" 하이퍼파라미터 베이지안 최적화")  
+    print(" 스태킹 앙상블 (2단계)")
+    print(" 외부 데이터 추가 (날씨, 이벤트)")
     
-    print(f"\n🏆 현재까지 성과:")
+    print(f"\n 현재까지 성과:")
     print("1단계 단순모델: RMSE 32.77")
     print("2단계 타겟인코딩: RMSE 22.76 (30.6% 개선)")
     print("3단계 앙상블모델: RMSE 18-21 예상 (15-20% 추가 개선)")
-    print("📊 총 누적 개선: 40-50% 성능 향상!")
+    print(" 총 누적 개선: 40-50% 성능 향상!")

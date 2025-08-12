@@ -1,3 +1,6 @@
 
 /catboost_info
 /autogluon_models
+/autogluon_timeseries_model
+/autogluon_models_gpu
+/autogluon_models_gpu_3060ti

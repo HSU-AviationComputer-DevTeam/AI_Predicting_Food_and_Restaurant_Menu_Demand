@@ -266,7 +266,7 @@ def create_improved_features(df, is_train=True, encoders=None, target_encoders=N
 def analyze_feature_importance_comprehensive(models, feature_names, train_df, target_col):
     """포괄적인 피처 중요도 분석"""
     print("\n" + "="*60)
-    print("🔍 포괄적인 피처 중요도 분석")
+    print(" 포괄적인 피처 중요도 분석")
     print("="*60)
     
     importance_results = {}
@@ -336,7 +336,7 @@ def analyze_feature_importance_comprehensive(models, feature_names, train_df, ta
     # 피처 카테고리 분류
     def categorize_feature(feature_name):
         if 'target_enc' in feature_name:
-            return '🎯 타겟 인코딩'
+            return ' 타겟 인코딩'
         elif 'encoded' in feature_name:
             return '🏷️ 카테고리 인코딩'
         elif any(store in feature_name for store in ['포레스트릿', '카페테리아', '화담숲주막', '담하', '미라시아']):
@@ -358,16 +358,16 @@ def analyze_feature_importance_comprehensive(models, feature_names, train_df, ta
         elif feature_name in ['1월', '3월', '5월', '8월', '12월']:
             return '📆 특별한 월'
         elif feature_name in ['월초', '월중', '월말', '급여일근처']:
-            return '📊 월 특성'
+            return ' 월 특성'
         elif feature_name in ['주말여부', '공휴일여부', '금요일', '일요일']:
-            return '🎉 주말/공휴일'
+            return ' 주말/공휴일'
         else:
             return '❓ 기타'
     
     feature_importance_df['category'] = feature_importance_df['feature'].apply(categorize_feature)
     
     # 결과 출력
-    print(f"\n📊 전체 피처 중요도 순위 (Top 30)")
+    print(f"\n 전체 피처 중요도 순위 (Top 30)")
     print("-" * 100)
     print(f"{'순위':>3} {'피처명':<35} {'카테고리':<20} {'종합점수':>8} {'CatBoost':>8} {'LightGBM':>8} {'XGBoost':>8}")
     print("-" * 100)
@@ -378,7 +378,7 @@ def analyze_feature_importance_comprehensive(models, feature_names, train_df, ta
               f"{row['lightgbm_importance']:>8.4f} {row['xgboost_importance']:>8.4f}")
     
     # 카테고리별 중요도 요약
-    print(f"\n📈 카테고리별 중요도 요약")
+    print(f"\n 카테고리별 중요도 요약")
     print("-" * 50)
     category_importance = feature_importance_df.groupby('category').agg({
         'combined_score': ['mean', 'sum', 'count']
@@ -390,7 +390,7 @@ def analyze_feature_importance_comprehensive(models, feature_names, train_df, ta
         print(f"{category:<25} 평균:{row['평균_중요도']:>7.4f} 총합:{row['총합_중요도']:>7.4f} 개수:{row['피처_수']:>3.0f}")
     
     # 추천 피처 선택
-    print(f"\n🎯 추천 피처 선택 전략")
+    print(f"\n 추천 피처 선택 전략")
     print("-" * 50)
     
     # Top K 피처들 선택 전략
@@ -505,7 +505,7 @@ def train_feature_selected_model(train_df, target_col='매출수량', n_features
     
     # Top K 피처 선택
     selected_features = feature_importance_df.head(n_features)['feature'].tolist()
-    print(f"\n✅ 선택된 {len(selected_features)}개 핵심 피처:")
+    print(f"\n 선택된 {len(selected_features)}개 핵심 피처:")
     
     # 선택된 피처를 카테고리별로 출력
     selected_df = feature_importance_df.head(n_features)
@@ -594,7 +594,7 @@ def train_feature_selected_model(train_df, target_col='매출수량', n_features
     improvement = previous_score - ensemble_mean
     improvement_pct = (improvement / previous_score) * 100
     
-    print(f"\n🎉 피처 선택 효과:")
+    print(f"\n 피처 선택 효과:")
     print(f"  이전 모델 (90개 피처): {previous_score:.2f}")
     print(f"  선택 모델 ({n_features}개 피처): {ensemble_mean:.2f}")
     print(f"  성능 변화: {improvement:+.2f} ({improvement_pct:+.1f}%)")
@@ -667,12 +667,12 @@ def convert_to_submission_format(pred_df, sample_submission):
 
 # --- 메인 실행 ---
 if __name__ == "__main__":
-    print("=== 🎯 피처 선택 최적화 모델 ===")
+    print("===  피처 선택 최적화 모델 ===")
     print("목표:")
-    print("  📊 피처 수: 90개 → 40개 (핵심만 선택)")
-    print("  📈 성능: 오버피팅 방지로 안정성 향상")
-    print("  🔍 해석력: 중요 피처 명확한 랭킹 제공")
-    print("  🚀 효율성: 학습/예측 속도 향상")
+    print("   피처 수: 90개 → 40개 (핵심만 선택)")
+    print("   성능: 오버피팅 방지로 안정성 향상")
+    print("   해석력: 중요 피처 명확한 랭킹 제공")
+    print("   효율성: 학습/예측 속도 향상")
     print()
 
     # 1. 데이터 로드
@@ -722,35 +722,35 @@ if __name__ == "__main__":
     # 6. 피처 중요도 상세 분석 저장
     feature_importance_df.to_csv('feature_importance_analysis.csv', index=False, encoding='utf-8-sig')
     
-    print(f"\n=== 🎉 피처 선택 모델 완료 ===")
-    print("✅ 결과가 'feature_selected_submission.csv'에 저장되었습니다.")
-    print("✅ 피처 중요도 분석이 'feature_importance_analysis.csv'에 저장되었습니다.")
+    print(f"\n===  피처 선택 모델 완료 ===")
+    print(" 결과가 'feature_selected_submission.csv'에 저장되었습니다.")
+    print(" 피처 중요도 분석이 'feature_importance_analysis.csv'에 저장되었습니다.")
     
-    print(f"\n📊 주요 성과:")
-    print("🔬 정밀한 피처 중요도 분석 (4가지 방법 종합)")
-    print("📉 피처 수 56% 감소 (90개 → 40개)")  
-    print("⚡ 학습/예측 속도 향상")
-    print("🎯 핵심 피처만 사용으로 해석력 향상")
-    print("📈 오버피팅 방지로 안정성 개선 기대")
+    print(f"\n 주요 성과:")
+    print(" 정밀한 피처 중요도 분석 (4가지 방법 종합)")
+    print(" 피처 수 56% 감소 (90개 → 40개)")  
+    print(" 학습/예측 속도 향상")
+    print(" 핵심 피처만 사용으로 해석력 향상")
+    print(" 오버피팅 방지로 안정성 개선 기대")
     
-    print(f"\n🏆 모델 진화 과정:")
+    print(f"\n 모델 진화 과정:")
     print("1단계 단순모델:     RMSE 32.77 (33개 피처)")
     print("2단계 타겟인코딩:   RMSE 22.76 (90개 피처, 30.6% 개선)")
     print("3단계 앙상블모델:   RMSE 22.71 (90개 피처, 안정성 향상)") 
     print("4단계 피처선택:     RMSE ??.?? (40개 피처, 최적화 완료)")
     
-    print(f"\n💡 피처 중요도 인사이트:")
-    print("📈 가장 중요한 피처 Top 5:")
+    print(f"\n 피처 중요도 인사이트:")
+    print(" 가장 중요한 피처 Top 5:")
     for i, row in feature_importance_df.head(5).iterrows():
         print(f"  {i+1}. {row['feature']:<30} ({row['category']}) - {row['combined_score']:.4f}")
     
-    print(f"\n🔍 상세 분석:")
+    print(f"\n 상세 분석:")
     print("- 'feature_importance_analysis.csv' 파일에서 전체 피처 순위 확인 가능")
     print("- 4가지 중요도 측정 방법의 종합 점수 제공")
     print("- 카테고리별 기여도 분석 포함")
     
-    print(f"\n🚀 다음 단계 개선 방향:")
-    print("💡 하이퍼파라미터 베이지안 최적화")
-    print("💡 스태킹 앙상블 (2단계)")
-    print("💡 시간 가중 타겟 인코딩") 
-    print("💡 고급 정규화 기법")
+    print(f"\n 다음 단계 개선 방향:")
+    print(" 하이퍼파라미터 베이지안 최적화")
+    print(" 스태킹 앙상블 (2단계)")
+    print(" 시간 가중 타겟 인코딩") 
+    print(" 고급 정규화 기법")

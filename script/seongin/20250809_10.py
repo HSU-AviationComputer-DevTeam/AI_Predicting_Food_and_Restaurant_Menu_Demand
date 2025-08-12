@@ -112,56 +112,81 @@ print("🚀 새로운 통합 모델 학습 시작...")
 predictor.fit(
     ts_df,
     presets='best_quality',
-    time_limit=600, # 학습 시간 600초로 증가
-    num_gpus=0
+    time_limit=600 # 학습 시간 600초로 증가
 )
 
 # 예측
 print("예측 생성 중...")
-predictions = predictor.predict(ts_df)
+all_predictions_list = []
 
-# 예측 결과 후처리
-predictions['mean'] = predictions['mean'].clip(lower=0) # 예측값이 음수일 경우 0으로 처리
-
-# 제출 파일 생성
-print("제출 파일 생성 중...")
-pred_df = predictions.reset_index()
-
-# 'TEST_XX+N일' 형식에 맞게 데이터 변환
 test_paths = sorted(glob.glob('./data/test/*.csv'))
 if not test_paths:
     print("test 폴더에 예측할 파일이 없습니다.")
 else:
-    all_submission_dfs = []
-    
-    for path in tqdm(test_paths, desc="Test 파일별 예측 변환"):
+    for path in tqdm(test_paths, desc="Test 파일별 예측 생성"):
         test_file_df = pd.read_csv(path)
         basename = os.path.basename(path).replace('.csv', '')
         
-        # 해당 test 파일에 포함된 메뉴만 필터링
+        # 1. 예측을 위한 컨텍스트 데이터 준비 (train + test)
         menus_in_test = test_file_df['영업장명_메뉴명'].unique()
-        test_preds = pred_df[pred_df['item_id'].isin(menus_in_test)].copy()
-
-        # timestamp에서 날짜만 추출하여 예측 시작 날짜 생성
-        # test 파일의 마지막 날짜 + 1일이 예측 시작 날짜가 됨
-        test_last_date = pd.to_datetime(test_file_df['영업일자']).max()
         
-        # 예측 데이터의 날짜 생성
-        test_preds['day_offset'] = test_preds.groupby('item_id').cumcount()
-        test_preds['영업일자_pred'] = test_preds.apply(
-            lambda row: test_last_date + pd.Timedelta(days=row['day_offset'] + 1), axis=1
+        # train 데이터에서 현재 test 파일에 존재하는 메뉴들의 데이터만 필터링
+        historical_train_data = train_featured[train_featured['영업장명_메뉴명'].isin(menus_in_test)]
+        
+        # feature가 생성된 test 데이터 준비
+        # TimeSeriesPredictor는 feature를 내부적으로 처리하므로 원본 test_file_df 사용
+        context_df = pd.concat([historical_train_data, test_file_df], ignore_index=True)
+
+        context_ts_df = TimeSeriesDataFrame.from_data_frame(
+            context_df,
+            id_column="영업장명_메뉴명",
+            timestamp_column="영업일자"
+        )
+
+        # 2. 미래의 known_covariates 생성
+        last_date = pd.to_datetime(test_file_df['영업일자']).max()
+        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=7, freq='D')
+        
+        # 모든 메뉴에 대해 미래 날짜 데이터프레임 생성
+        future_df_list = []
+        for menu in menus_in_test:
+            temp_df = pd.DataFrame({'영업장명_메뉴명': [menu] * 7, '영업일자': future_dates})
+            future_df_list.append(temp_df)
+        
+        future_df = pd.concat(future_df_list, ignore_index=True)
+        future_known_covariates_df = create_features(future_df, is_train=False)
+
+        # TimeSeriesDataFrame으로 변환하여 id_column 명시
+        future_known_covariates = TimeSeriesDataFrame.from_data_frame(
+            future_known_covariates_df,
+            id_column="영업장명_메뉴명",
+            timestamp_column="영업일자",
+        )
+
+        # 3. 예측 실행
+        predictions = predictor.predict(
+            context_ts_df,
+            known_covariates=future_known_covariates
         )
         
-        # 제출 형식에 맞는 '영업일자' 컬럼 생성
-        test_preds['영업일자'] = test_preds.apply(lambda row: f"{basename}+{row['day_offset']+1}일", axis=1)
-        
-        # 컬럼명 변경
-        test_preds = test_preds.rename(columns={'item_id': '영업장명_메뉴명', 'mean': '매출수량'})
-        
-        all_submission_dfs.append(test_preds[['영업일자', '영업장명_메뉴명', '매출수량']])
+        # 4. 예측 결과 포맷팅
+        predictions['mean'] = predictions['mean'].clip(lower=0)
+        pred_df_single_test = predictions.reset_index()
 
+        pred_df_single_test['day_offset'] = pred_df_single_test.groupby('item_id').cumcount()
+        pred_df_single_test['영업일자'] = pred_df_single_test.apply(
+            lambda row: f"{basename}+{row['day_offset']+1}일", axis=1
+        )
+        pred_df_single_test = pred_df_single_test.rename(columns={'item_id': '영업장명_메뉴명', 'mean': '매출수량'})
+        
+        all_predictions_list.append(pred_df_single_test[['영업일자', '영업장명_메뉴명', '매출수량']])
+
+# 최종 제출 파일 생성
+if all_predictions_list:
+    print("제출 파일 생성 중...")
+    
     # 모든 예측 결과 결합
-    final_pred_df = pd.concat(all_submission_dfs, ignore_index=True)
+    final_pred_df = pd.concat(all_predictions_list, ignore_index=True)
 
     # Pivot 테이블 생성
     submission_pivot = final_pred_df.pivot(index='영업일자', columns='영업장명_메뉴명', values='매출수량').reset_index()
