@@ -217,9 +217,8 @@ def create_features(df):
     df['season'] = df['season'].astype(str)
 
     # 불필요한 원본 컬럼 제거
-    # '메뉴명'은 이제 모델이 메뉴를 구분하는 핵심 피처로 사용되므로 삭제하지 않음
-    if '영업장명' in df.columns:
-        df = df.drop(columns=['영업장명'])
+    if '영업장명_메뉴명' in df.columns:
+        df = df.drop(columns=['영업장명_메뉴명', '영업장명', '메뉴명'])
 
     # 내부 계산용 임시 컬럼 제거
     if 'yyyymm' in df.columns:
@@ -243,9 +242,6 @@ if Prophet is not None:
 
 # 피처 생성
 train_full_featured = create_features(train_df)
-
-# 분석 결과 저장 폴더 생성
-os.makedirs(ANALYSIS_PATH, exist_ok=True)
 
 # 예측 결과를 저장할 리스트
 all_predictions = []
@@ -277,126 +273,129 @@ test_paths = sorted(glob.glob('./data/test/*.csv'))
 if not test_paths:
     print("test 폴더에 예측할 파일이 없습니다.")
 else:
-    # 매장별 모델링을 위해 '영업장명' 피처 생성
-    train_full_featured['영업장명'] = train_full_featured['영업장명_메뉴명'].str.split('_').str[0]
-    unique_restaurants = train_full_featured['영업장명'].unique()
+    unique_menus = train_df['영업장명_메뉴명'].unique()
 
-    for restaurant_name in tqdm(unique_restaurants, desc="매장별 통합 모델 학습 및 예측"):
-        # 1. 매장별 데이터 준비
-        restaurant_train_data = train_full_featured[train_full_featured['영업장명'] == restaurant_name].copy()
+    for menu_name in tqdm(unique_menus, desc="메뉴별 개별 모델 학습 및 예측"):
+        # 1. 메뉴별 데이터 준비
+        menu_train_data = train_full_featured[train_df['영업장명_메뉴명'] == menu_name].copy()
         
-        if len(restaurant_train_data) < 50: # 학습에 필요한 최소 데이터 수
+        if len(menu_train_data) < 50: # 학습에 필요한 최소 데이터 수
+            # 데이터가 부족한 메뉴는 0으로 예측
+            for path in test_paths:
+                basename = os.path.basename(path).replace('.csv', '')
+                for i in range(7):
+                    all_predictions.append({
+                        '영업일자': f"{basename}+{i+1}일",
+                        '영업장명_메뉴명': menu_name,
+                        '매출수량': 0
+                    })
             continue
             
-        # AutoGluon 학습을 위한 데이터 준비
-        train_data_ag = restaurant_train_data.drop(columns=['영업일자', '영업장명_메뉴명', '영업장명'])
+        # AutoGluon 학습을 위한 데이터 준비 (영업일자 제외)
+        train_data_ag = menu_train_data.drop(columns=['영업일자'])
 
         # 경로 설정
-        predictor_path = f'autogluon_models_restaurant/{restaurant_name.replace("/", "_").replace(" ", "")}'
+        predictor_path = f'autogluon_models_menu/{menu_name.replace("/", "_").replace(" ", "")}'
         
         predictor = None
         if os.path.exists(predictor_path):
             try:
-                print(f"✅ 이미 학습된 모델 발견: {restaurant_name}. 불러오기를 시작합니다.")
+                print(f"✅ 이미 학습된 '{menu_name}' 모델 발견. 불러오기를 시작합니다.")
                 predictor = TabularPredictor.load(predictor_path)
             except Exception as e:
-                print(f"🚨 모델 '{restaurant_name}' 불러오기 실패 (오류: {e}). 손상된 모델을 삭제하고 새로 학습합니다.")
+                print(f"🚨 모델 '{menu_name}' 불러오기 실패 (오류: {e}). 손상된 모델을 삭제하고 새로 학습합니다.")
                 shutil.rmtree(predictor_path)
                 predictor = None
         
         if predictor is None:
-            print(f"🚀 새로운 통합 모델 학습 시작: {restaurant_name}")
+            print(f"🚀 [1단계-탐색] '{menu_name}' 메뉴의 모델 탐색을 시작합니다.")
             hyperparameters = {
-                'GBM': {}, 'CAT': {}, 'XGB': {}, 'RF': {}, 'XT': {}
+                'GBM': [{}], 'CAT': [{}], 'XGB': [{}], 'RF': [{}], 'XT': [{}], 'FASTAI': [{}]
             }
             
             predictor = TabularPredictor(
                 label='매출수량', path=predictor_path, problem_type='regression', eval_metric=smape_scorer
             ).fit(
                 train_data_ag, hyperparameters=hyperparameters,
-                time_limit=600, # 매장별 모델은 더 많은 데이터를 다루므로 시간 증가
-                presets='medium_quality',
-                num_bag_folds=5, num_bag_sets=1, ag_args_fit={'num_gpus': 0}
+                time_limit=300, presets='medium_quality',
+                num_bag_folds=5, num_bag_sets=1, ag_args_fit={'num_gpus': 1}
             )
 
+        # 리더보드 및 피처 중요도 분석
         leaderboard = predictor.leaderboard(silent=True)
+        best_model_name = leaderboard.iloc[0]['model']
         best_score = leaderboard.iloc[0]['score_val']
         all_menu_scores.append(best_score)
-        print(f"📈 매장 '{restaurant_name}' 통합 모델 검증 SMAPE 점수: {best_score:.4f}")
-
+        
+        print(f"📈 메뉴 '{menu_name}' 최종 모델: {best_model_name} (검증 SMAPE: {best_score:.4f})")
+        
+        # 피처 중요도 분석
         try:
-            feature_importance = predictor.feature_importance(train_data_ag)
-            print("✨ 상위 10개 중요 피처:")
-            print(feature_importance.head(10))
-        except Exception as e:
-            print(f"⚠️ 피처 중요도 분석 중 오류 발생: {e}")
+            fi = predictor.feature_importance(train_data_ag)
+            fi_path = os.path.join(predictor_path, 'feature_importance.csv')
+            fi.to_csv(fi_path, index=True)
+            print(f"   - 피처 중요도 저장 완료: {fi_path}")
+        except Exception:
+            # 타임아웃 등으로 실패 시, 상위 N개 피처만 선택
+            print(f"   - ⚠️ 피처 중요도 분석 실패. 기본 Lag/시간 피처를 사용하여 재시도합니다.")
 
-        # 매장별 테스트 데이터 예측 (순환 예측)
+        # 2. 순환 예측 (Recursive Forecasting)
         for path in test_paths:
-            test_file_df = pd.read_csv(path)
-            test_file_df['영업장명'] = test_file_df['영업장명_메뉴명'].str.split('_').str[0]
-            
-            # 현재 매장의 메뉴가 테스트 파일에 없으면 건너뛰기
-            if restaurant_name not in test_file_df['영업장명'].unique():
-                continue
-
             basename = os.path.basename(path).replace('.csv', '')
             
             # 예측에 사용할 과거 데이터 (train + test 파일의 과거 데이터)
             historical_data = pd.concat([
-                train_full_featured[train_full_featured['영업장명'] == restaurant_name],
-                test_file_df[test_file_df['영업장명'] == restaurant_name]
+                train_df[train_df['영업장명_메뉴명'] == menu_name],
+                pd.read_csv(path)[lambda x: x['영업장명_메뉴명'] == menu_name]
             ]).copy()
             historical_data['영업일자'] = pd.to_datetime(historical_data['영업일자'])
-            historical_data = historical_data.sort_values(by='영업일자').tail(28 * len(unique_restaurants)) # 충분한 과거 데이터 확보
-
-            # 7일 예측
-            menus_to_predict = test_file_df[test_file_df['영업장명'] == restaurant_name]['영업장명_메뉴명'].unique()
             
+            # 7일 예측
             for i in range(7):
                 last_date = historical_data['영업일자'].max()
                 next_date = last_date + pd.Timedelta(days=1)
                 
-                # 예측을 위한 새로운 행 생성 (해당 매장의 모든 메뉴에 대해)
-                new_rows = pd.DataFrame([
-                    {'영업일자': next_date, '영업장명_메뉴명': menu, '매출수량': np.nan}
-                    for menu in menus_to_predict
-                ])
+                # 예측을 위한 새로운 행 생성
+                new_row = pd.DataFrame([{'영업일자': next_date, '영업장명_메뉴명': menu_name, '매출수량': np.nan}])
                 
                 # 피처 생성을 위해 과거 데이터와 합침
-                combined_for_feature = pd.concat([historical_data, new_rows], ignore_index=True)
+                combined_for_feature = pd.concat([historical_data, new_row], ignore_index=True)
                 featured_data = create_features(combined_for_feature)
                 
-                # 예측할 마지막 행들 선택 (AG 입력)
-                X_test = featured_data.tail(len(menus_to_predict)).drop(columns=['영업일자', '영업장명_메뉴명', '매출수량', '영업장명'])
-                
+                # 예측할 마지막 행 선택
+                X_test = featured_data.tail(1).drop(columns=['영업일자', '매출수량'])
+
                 # AutoGluon 예측
                 X_test_aligned = align_required_raw_features_for_predict(predictor, X_test.copy())
-                predictions = predictor.predict(X_test_aligned)
-                predictions = predictions.clip(lower=0)
+                prediction_ag = predictor.predict(X_test_aligned).iloc[0]
+                prediction_ag = max(0, prediction_ag)
+
+                # Prophet 보조 예측 (옵션)
+                prediction_prophet = get_prophet_yhat_for_date(menu_name, next_date)
                 
-                # Prophet은 현재 구조에서 사용하기 복잡하므로 앙상블에서 제외
-                pred_final = predictions.values
-                
+                # 앙상블
+                if prediction_prophet is not None:
+                    pred_final = (1 - PROPHET_WEIGHT) * prediction_ag + PROPHET_WEIGHT * prediction_prophet
+                else:
+                    pred_final = prediction_ag
+
                 # 예측 결과 저장
-                for idx, menu in enumerate(menus_to_predict):
-                    all_predictions.append({
-                        '영업일자': f"{basename}+{i+1}일",
-                        '영업장명_메뉴명': menu,
-                        '매출수량': pred_final[idx]
-                    })
+                all_predictions.append({
+                    '영업일자': f"{basename}+{i+1}일",
+                    '영업장명_메뉴명': menu_name,
+                    '매출수량': pred_final
+                })
 
                 # 다음 예측을 위해 예측값을 포함하여 historical_data 업데이트
-                update_rows = featured_data.tail(len(menus_to_predict)).copy()
-                update_rows['매출수량'] = pred_final
-                historical_data = pd.concat([historical_data, update_rows], ignore_index=True)
-        # 루프의 나머지 부분은 동일하게 유지
+                update_row = new_row.copy()
+                update_row['매출수량'] = pred_final
+                historical_data = pd.concat([historical_data, update_row], ignore_index=True)
 
 # 예측 결과를 제출 형식으로 변환
 if all_predictions:
     pred_df = pd.DataFrame(all_predictions)
     
-    print("제출 파일 생성 중...")
+    print("\n제출 파일 생성 중...")
     
     submission_pivot = pred_df.pivot(index='영업일자', columns='영업장명_메뉴명', values='매출수량').reset_index()
     
@@ -406,17 +405,32 @@ if all_predictions:
     # 컬럼 순서를 샘플과 동일하게 맞춤
     final_submission = final_submission[submission_df.columns]
     
-    final_submission.to_csv('submission_autogluon_per_item.csv', index=False)
-    print("submission_autogluon_per_item.csv 파일 생성 완료")
+    final_submission.to_csv('submission_autogluon_menu_pipeline.csv', index=False)
+    print("✅ submission_autogluon_menu_pipeline.csv 파일 생성 완료")
 
-    # 최종 평균 검증 점수 출력
+    # 최종 평균 검증 점수 및 성능 격차 분석
     if all_menu_scores:
-        average_smape = np.mean(all_menu_scores)
-        print("\n" + "="*50)
-        print(f"📊 전체 메뉴의 평균 검증 SMAPE 점수: {average_smape:.4f}")
-        print("="*50)
+        leaderboard_df = pd.DataFrame(all_menu_scores, columns=['menu', 'model_1', 'score_1', 'model_2', 'score_2'])
+        leaderboard_df['score_diff'] = np.abs(leaderboard_df['score_1'] - leaderboard_df['score_2'])
+        
+        avg_smape = leaderboard_df['score_1'].mean()
+        
+        print("\n" + "="*60)
+        print(f"📊 전체 메뉴의 평균 검증 SMAPE 점수: {avg_smape:.4f}")
+        print("="*60)
+        
+        print("\n" + "="*60)
+        print("📊 모델 성능 격차 분석 (1위와 2위 모델의 SMAPE 점수 차이)")
+        print("="*60)
+        
+        large_gap_menus = leaderboard_df[leaderboard_df['score_diff'] > 5]
+        if large_gap_menus.empty:
+            print("✅ 모든 메뉴에서 1-2위 모델 간 큰 성능 차이가 발견되지 않았습니다.")
+        else:
+            print("🚨 아래 메뉴에서 1-2위 모델 간 5점 이상의 성능 차이가 발견되었습니다:")
+            print(large_gap_menus[['menu', 'model_1', 'score_1', 'model_2', 'score_2', 'score_diff']])
 else:
-    print("생성된 예측이 없습니다.")
+    print("\n생성된 예측이 없습니다.")
 
 print("\n=== 🏆 AutoGluon(+Prophet 보조 앙상블) 모델 ===")
 print("✅ 각 메뉴별 AutoGluon 모델 + Prophet 보조 예측 가중 앙상블")
