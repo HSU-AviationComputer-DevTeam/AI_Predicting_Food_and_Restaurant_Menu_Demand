@@ -1,0 +1,181 @@
+﻿menu_name,training_samples,best_model,validation_smape,total_fit_time
+느티나무 셀프BBQ_1인 수저세트,532,LightGBM,-0.6647315193234928,0
+느티나무 셀프BBQ_BBQ55(단체),532,LightGBM,-0.7558001625129802,0
+"느티나무 셀프BBQ_대여료 30,000원",532,LightGBM,-0.4519136981634104,0
+"느티나무 셀프BBQ_대여료 60,000원",532,WeightedEnsemble_L2,-0.4958307944970698,0
+"느티나무 셀프BBQ_대여료 90,000원",532,WeightedEnsemble_L2,-0.8046548746057067,0
+"느티나무 셀프BBQ_본삼겹 (단품,실내)",532,WeightedEnsemble_L2,-0.7995596062564381,0
+느티나무 셀프BBQ_스프라이트 (단체),532,WeightedEnsemble_L2,-0.7175407617316744,0
+느티나무 셀프BBQ_신라면,532,WeightedEnsemble_L2,-0.8275041556502925,0
+느티나무 셀프BBQ_쌈야채세트,532,WeightedEnsemble_L2,-0.6516199314286626,0
+느티나무 셀프BBQ_쌈장,532,WeightedEnsemble_L2,-0.8772788495146582,0
+느티나무 셀프BBQ_육개장 사발면,532,WeightedEnsemble_L2,-0.8063653943451913,0
+느티나무 셀프BBQ_일회용 소주컵,532,WeightedEnsemble_L2,-0.8154546209550347,0
+느티나무 셀프BBQ_일회용 종이컵,532,LightGBM,-0.6389480702147624,0
+느티나무 셀프BBQ_잔디그늘집 대여료 (12인석),532,WeightedEnsemble_L2,-0.7734246596046025,0
+느티나무 셀프BBQ_잔디그늘집 대여료 (6인석),532,LightGBM,-0.7254719780311052,0
+느티나무 셀프BBQ_잔디그늘집 의자 추가,532,WeightedEnsemble_L2,-0.8571060493133241,0
+느티나무 셀프BBQ_참이슬 (단체),532,WeightedEnsemble_L2,-0.702913471076823,0
+느티나무 셀프BBQ_친환경 접시 14cm,532,LightGBM,-0.7954062702838395,0
+느티나무 셀프BBQ_친환경 접시 23cm,532,WeightedEnsemble_L2,-0.6598861163243196,0
+느티나무 셀프BBQ_카스 병(단체),532,WeightedEnsemble_L2,-0.6981212966928704,0
+느티나무 셀프BBQ_콜라 (단체),532,LightGBM,-0.7098655193097586,0
+느티나무 셀프BBQ_햇반,532,LightGBM,-0.7180063652371232,0
+느티나무 셀프BBQ_허브솔트,532,WeightedEnsemble_L2,-0.8566132082570411,0
+담하_(단체) 공깃밥,532,WeightedEnsemble_L2,-0.9150068793850641,0
+담하_(단체) 생목살 김치전골 2.0,532,LightGBM,-0.9262433227435201,0
+담하_(단체) 은이버섯 갈비탕,532,WeightedEnsemble_L2,-0.9191187842306618,0
+담하_(단체) 한우 우거지 국밥,532,WeightedEnsemble_L2,-0.8940744481205823,0
+담하_(단체) 황태해장국 3/27까지,532,WeightedEnsemble_L2,-0.701055210391094,0
+담하_(정식) 된장찌개,532,LightGBM,-0.4895947033623814,0
+담하_(정식) 물냉면 ,532,WeightedEnsemble_L2,-0.5689992620655698,0
+담하_(정식) 비빔냉면,532,WeightedEnsemble_L2,-0.550681140867884,0
+담하_(후식) 된장찌개,532,WeightedEnsemble_L2,-0.41608861715466505,0
+담하_(후식) 물냉면,532,WeightedEnsemble_L2,-0.6504895336812122,0
+담하_(후식) 비빔냉면,532,WeightedEnsemble_L2,-0.6839140874111812,0
+담하_갑오징어 비빔밥,532,WeightedEnsemble_L2,-0.7175255214830569,0
+담하_갱시기,532,WeightedEnsemble_L2,-0.7807862368025116,0
+담하_공깃밥,532,WeightedEnsemble_L2,-0.24291197441189682,0
+담하_느린마을 막걸리,532,WeightedEnsemble_L2,-0.6344318544961505,0
+담하_담하 한우 불고기,532,WeightedEnsemble_L2,-0.3140322355870185,0
+담하_담하 한우 불고기 정식,532,WeightedEnsemble_L2,-0.4624519622294663,0
+담하_더덕 한우 지짐,532,WeightedEnsemble_L2,-0.6840144687912377,0
+담하_라면사리,532,LightGBM,-0.8673756781694724,0
+담하_룸 이용료,532,WeightedEnsemble_L2,-0.8145928188703732,0
+담하_메밀면 사리,532,WeightedEnsemble_L2,-0.4696926727288428,0
+담하_명인안동소주,532,WeightedEnsemble_L2,-0.9318556562461887,0
+담하_명태회 비빔냉면,532,WeightedEnsemble_L2,-0.5158190093005679,0
+담하_문막 복분자 칵테일,532,WeightedEnsemble_L2,-0.9109173243394217,0
+담하_봉평메밀 물냉면,532,WeightedEnsemble_L2,-0.5250999459493648,0
+담하_생목살 김치찌개,532,WeightedEnsemble_L2,-0.23682186723273993,0
+담하_스프라이트,532,LightGBM,-0.7015822453423786,0
+담하_은이버섯 갈비탕,532,WeightedEnsemble_L2,-0.3661854771855664,0
+담하_제로콜라,532,WeightedEnsemble_L2,-0.8077489610413084,0
+담하_참이슬,532,WeightedEnsemble_L2,-0.45380832995524395,0
+담하_처음처럼,532,LightGBM,-0.7648922659583043,0
+담하_카스,532,WeightedEnsemble_L2,-0.593320413965104,0
+담하_콜라,532,WeightedEnsemble_L2,-0.5754456204975786,0
+담하_테라,532,WeightedEnsemble_L2,-0.6684797138278296,0
+담하_하동 매실 칵테일,532,WeightedEnsemble_L2,-0.7303561830556413,0
+담하_한우 떡갈비 정식,532,WeightedEnsemble_L2,-0.3161352921569568,0
+담하_한우 미역국 정식,532,WeightedEnsemble_L2,-0.3543251210215739,0
+담하_한우 우거지 국밥,532,WeightedEnsemble_L2,-0.3212012492639971,0
+담하_한우 차돌박이 된장찌개,532,WeightedEnsemble_L2,-0.24376772297638633,0
+담하_황태해장국,532,WeightedEnsemble_L2,-0.35919161511764575,0
+라그로타_AUS (200g),532,WeightedEnsemble_L2,-0.763286426313819,0
+라그로타_G-Charge(3),532,WeightedEnsemble_L2,-0.8169537896048313,0
+라그로타_Gls.Sileni,532,WeightedEnsemble_L2,-0.5630094250507206,0
+라그로타_Gls.미션 서드,532,WeightedEnsemble_L2,-0.4945976594760893,0
+라그로타_Open Food,532,LightGBM,-0.832780567822966,0
+라그로타_그릴드 비프 샐러드,532,LightGBM,-0.6987881864396261,0
+라그로타_까르보나라,532,WeightedEnsemble_L2,-0.7774037705355681,0
+라그로타_모둠 해산물 플래터,532,WeightedEnsemble_L2,-0.9393327688322927,0
+라그로타_미션 서드 카베르네 쉬라,532,LightGBM,-0.780711411026533,0
+라그로타_버섯 크림 리조또,532,WeightedEnsemble_L2,-0.7873328487079326,0
+라그로타_빵 추가 (1인),532,WeightedEnsemble_L2,-0.6761424365699809,0
+라그로타_스프라이트,532,WeightedEnsemble_L2,-0.7982481592527897,0
+라그로타_시저 샐러드 ,532,WeightedEnsemble_L2,-0.7023558812817662,0
+라그로타_아메리카노,532,WeightedEnsemble_L2,-0.7028554318599252,0
+라그로타_알리오 에 올리오 ,532,WeightedEnsemble_L2,-0.6873220456625898,0
+라그로타_양갈비 (4ps),532,WeightedEnsemble_L2,-0.8232390941991746,0
+라그로타_자몽리치에이드,532,WeightedEnsemble_L2,-0.5945431839360596,0
+라그로타_제로콜라,532,LightGBM,-0.7780211710775071,0
+라그로타_카스,532,WeightedEnsemble_L2,-0.7911909158594141,0
+라그로타_콜라,532,WeightedEnsemble_L2,-0.5836502289872528,0
+라그로타_하이네켄(생),532,WeightedEnsemble_L2,-0.5960225888027679,0
+라그로타_한우 (200g),532,WeightedEnsemble_L2,-0.8602939989477228,0
+라그로타_해산물 토마토 리조또,532,WeightedEnsemble_L2,-0.5379974242787168,0
+라그로타_해산물 토마토 스튜 파스타,532,WeightedEnsemble_L2,-0.7853881113393373,0
+라그로타_해산물 토마토 스파게티,532,LightGBM,-0.38939458310156155,0
+"미라시아_(단체)브런치주중 36,000",532,WeightedEnsemble_L2,-0.6341027373082955,0
+미라시아_(오븐) 하와이안 쉬림프 피자,532,WeightedEnsemble_L2,-0.7556024396599036,0
+미라시아_(화덕) 불고기 페퍼로니 반반피자,532,WeightedEnsemble_L2,-0.422794069711953,0
+미라시아_BBQ Platter,532,WeightedEnsemble_L2,-0.2714094042259281,0
+미라시아_BBQ 고기추가,532,WeightedEnsemble_L2,-0.7243901747893906,0
+미라시아_공깃밥,532,WeightedEnsemble_L2,-0.9175763823291336,0
+미라시아_글라스와인 (레드),532,WeightedEnsemble_L2,-0.9029338682115374,0
+미라시아_레인보우칵테일(알코올),532,WeightedEnsemble_L2,-0.7473296595552051,0
+미라시아_미라시아 브런치 (패키지),532,WeightedEnsemble_L2,-0.30182615687398046,0
+미라시아_버드와이저(무제한),532,WeightedEnsemble_L2,-0.4681353796564149,0
+미라시아_보일링 랍스타 플래터,532,WeightedEnsemble_L2,-0.7308242324996981,0
+미라시아_보일링 랍스타 플래터(덜매운맛),532,LightGBM,-0.7928059319373157,0
+미라시아_브런치 2인 패키지 ,532,WeightedEnsemble_L2,-0.3520637556328714,0
+미라시아_브런치 4인 패키지 ,532,WeightedEnsemble_L2,-0.8779704011248491,0
+미라시아_브런치(대인) 주말,532,WeightedEnsemble_L2,-0.7529351488313898,0
+미라시아_브런치(대인) 주중,532,WeightedEnsemble_L2,-0.4264672970777957,0
+미라시아_브런치(어린이),532,WeightedEnsemble_L2,-0.33124601468790343,0
+미라시아_쉬림프 투움바 파스타,532,WeightedEnsemble_L2,-0.5227569392381708,0
+미라시아_스텔라(무제한),532,WeightedEnsemble_L2,-0.5966977792969734,0
+미라시아_스프라이트,532,WeightedEnsemble_L2,-0.7080933825039069,0
+미라시아_애플망고 에이드,532,WeightedEnsemble_L2,-0.42519328973111115,0
+미라시아_얼그레이 하이볼,532,XGBoost,-0.5788446276893314,0
+미라시아_오븐구이 윙과 킬바사소세지,532,WeightedEnsemble_L2,-0.5649182407463741,0
+미라시아_유자 하이볼,532,WeightedEnsemble_L2,-0.7610746991541837,0
+미라시아_잭 애플 토닉,532,WeightedEnsemble_L2,-0.8648265816649954,0
+미라시아_칠리 치즈 프라이,532,WeightedEnsemble_L2,-0.7783257015500082,0
+미라시아_코카콜라,532,WeightedEnsemble_L2,-0.6681542591911619,0
+미라시아_코카콜라(제로),532,WeightedEnsemble_L2,-0.7711724149558423,0
+미라시아_콥 샐러드,532,WeightedEnsemble_L2,-0.8090322210046876,0
+미라시아_파스타면 추가(150g),532,WeightedEnsemble_L2,-0.8170836341433658,0
+미라시아_핑크레몬에이드,532,WeightedEnsemble_L2,-0.6921474677565264,0
+연회장_Cass Beer,532,WeightedEnsemble_L2,-0.8548443660667459,0
+연회장_Conference L1,532,WeightedEnsemble_L2,-0.7966434267769343,0
+연회장_Conference L2,532,LightGBM,-0.8037902939602486,0
+연회장_Conference L3,532,WeightedEnsemble_L2,-0.80186945940627,0
+연회장_Conference M1,532,LightGBM,-0.7797838993522356,0
+연회장_Conference M8,532,WeightedEnsemble_L2,-0.8773142217869414,0
+연회장_Conference M9,532,WeightedEnsemble_L2,-0.8650118465001776,0
+연회장_Convention Hall,532,WeightedEnsemble_L2,-0.6616031755099232,0
+연회장_Cookie Platter,532,WeightedEnsemble_L2,-0.6510380541070945,0
+연회장_Grand Ballroom,532,WeightedEnsemble_L2,-0.7402100523056908,0
+연회장_OPUS 2,532,WeightedEnsemble_L2,-0.8236830655624255,0
+연회장_Regular Coffee,532,WeightedEnsemble_L2,-0.8689061617028966,0
+연회장_골뱅이무침,532,WeightedEnsemble_L2,-0.6391082721467005,0
+연회장_공깃밥,532,WeightedEnsemble_L2,-0.7601635597373849,0
+연회장_돈목살 김치찌개 (밥포함),532,WeightedEnsemble_L2,-0.6456718929420023,0
+연회장_로제 치즈떡볶이,532,LightGBM,-0.6576766302803821,0
+연회장_마라샹궈,532,WeightedEnsemble_L2,-0.8371254617531401,0
+연회장_매콤 무뼈닭발&계란찜,532,WeightedEnsemble_L2,-0.6913553922502148,0
+연회장_모둠 돈육구이(3인),532,WeightedEnsemble_L2,-0.6055298840332076,0
+연회장_삼겹살추가 (200g),532,WeightedEnsemble_L2,-0.8413079365030025,0
+연회장_야채추가,532,WeightedEnsemble_L2,-0.8878154043632267,0
+연회장_왕갈비치킨,532,WeightedEnsemble_L2,-0.7444514938953052,0
+연회장_주먹밥 (2ea),532,WeightedEnsemble_L2,-0.6817632909376218,0
+카페테리아_공깃밥(추가),532,WeightedEnsemble_L2,-0.3342120760702003,0
+카페테리아_단체식 13000(신),532,WeightedEnsemble_L2,-0.7985430248806438,0
+카페테리아_단체식 18000(신),532,WeightedEnsemble_L2,-0.7059886190992785,0
+카페테리아_돼지고기 김치찌개,532,WeightedEnsemble_L2,-0.26062890885001316,0
+카페테리아_새우 볶음밥,532,WeightedEnsemble_L2,-0.29601720771568985,0
+카페테리아_수제 등심 돈까스,532,WeightedEnsemble_L2,-0.24614378399559272,0
+카페테리아_약 고추장 돌솥비빔밥,532,WeightedEnsemble_L2,-0.276450460734075,0
+카페테리아_어린이 돈까스,532,WeightedEnsemble_L2,-0.3860818613746159,0
+카페테리아_짜장면,532,WeightedEnsemble_L2,-0.30149564001491985,0
+카페테리아_짜장밥,532,WeightedEnsemble_L2,-0.5788116622034369,0
+카페테리아_짬뽕,532,WeightedEnsemble_L2,-0.26924801684259436,0
+카페테리아_짬뽕밥,532,WeightedEnsemble_L2,-0.28855492775525154,0
+카페테리아_치즈돈까스,532,XGBoost,-0.30576607693081376,0
+카페테리아_한상 삼겹구이 정식(2인) 소요시간 약 15~20분,532,WeightedEnsemble_L2,-0.5320415144703419,0
+포레스트릿_꼬치어묵,532,WeightedEnsemble_L2,-0.6222155969388253,0
+포레스트릿_떡볶이,532,WeightedEnsemble_L2,-0.5408188989884047,0
+포레스트릿_생수,532,WeightedEnsemble_L2,-0.5488041386620005,0
+포레스트릿_스프라이트,532,WeightedEnsemble_L2,-0.6045106003033501,0
+포레스트릿_아메리카노(HOT),532,WeightedEnsemble_L2,-0.5590509839284565,0
+포레스트릿_아메리카노(ICE),532,WeightedEnsemble_L2,-0.5108612606196824,0
+포레스트릿_치즈 핫도그,532,WeightedEnsemble_L2,-0.5415869117925863,0
+포레스트릿_카페라떼(HOT),532,WeightedEnsemble_L2,-0.5514464572487936,0
+포레스트릿_카페라떼(ICE),532,WeightedEnsemble_L2,-0.5599050680613584,0
+포레스트릿_코카콜라,532,WeightedEnsemble_L2,-0.5624224011116964,0
+포레스트릿_페스츄리 소시지,532,WeightedEnsemble_L2,-0.5605552899607344,0
+화담숲주막_느린마을 막걸리,532,WeightedEnsemble_L2,-0.5719149111532683,0
+화담숲주막_단호박 식혜 ,532,WeightedEnsemble_L2,-0.5867538683555754,0
+화담숲주막_병천순대,532,WeightedEnsemble_L2,-0.5688669048411861,0
+화담숲주막_스프라이트,532,WeightedEnsemble_L2,-0.6421966153401595,0
+화담숲주막_참살이 막걸리,532,WeightedEnsemble_L2,-0.5792013439500667,0
+화담숲주막_찹쌀식혜,532,WeightedEnsemble_L2,-0.6005606913156295,0
+화담숲주막_콜라,532,WeightedEnsemble_L2,-0.6262799588171767,0
+화담숲주막_해물파전,532,WeightedEnsemble_L2,-0.5605051725216453,0
+화담숲카페_메밀미숫가루,532,WeightedEnsemble_L2,-0.5996736334683075,0
+화담숲카페_아메리카노 HOT,532,WeightedEnsemble_L2,-0.6025698602530328,0
+화담숲카페_아메리카노 ICE,532,WeightedEnsemble_L2,-0.6266130972873996,0
+화담숲카페_카페라떼 ICE,532,WeightedEnsemble_L2,-0.6370530976784885,0
+화담숲카페_현미뻥스크림,532,WeightedEnsemble_L2,-0.6204745385235183,0
