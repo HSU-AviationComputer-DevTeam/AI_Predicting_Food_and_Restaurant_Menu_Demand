@@ -1,0 +1,358 @@
+import os
+import sys
+import glob
+import json
+import time
+import warnings
+from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
+
+warnings.filterwarnings("ignore")
+
+# Try to import mljar-supervised; if missing, print instruction
+try:
+    from supervised.automl import AutoML
+except Exception as e:
+    print("[INFO] mljar-supervised not found. Please install it:")
+    print("       /Users/sindong-u/coding/python/myenv/bin/pip install mljar-supervised")
+    raise
+
+BASE_DIR = "/Users/sindong-u/coding/python/Project/LgAImers/2기"
+DATA_DIR = os.path.join(BASE_DIR, "data")
+TRAIN_PATH = os.path.join(DATA_DIR, "train", "train.csv")
+TEST_DIR = os.path.join(DATA_DIR, "test")
+SAMPLE_SUB_PATH = os.path.join(DATA_DIR, "sample_submission.csv")
+OUTPUT_DIR = BASE_DIR
+
+np.random.seed(42)
+
+# -------------------------------
+# Utilities
+# -------------------------------
+
+def parse_date(df: pd.DataFrame, col: str = "영업일자") -> pd.DataFrame:
+    if not np.issubdtype(df[col].dtype, np.datetime64):
+        df[col] = pd.to_datetime(df[col])
+    return df
+
+
+def add_date_features(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df["year"] = df["영업일자"].dt.year
+    df["month"] = df["영업일자"].dt.month
+    df["day"] = df["영업일자"].dt.day
+    df["dayofweek"] = df["영업일자"].dt.dayofweek
+    df["is_weekend"] = df["dayofweek"].isin([5, 6]).astype(int)
+    df["quarter"] = df["영업일자"].dt.quarter
+    df["weekofyear"] = df["영업일자"].dt.isocalendar().week.astype(int)
+    df["dayofyear"] = df["영업일자"].dt.dayofyear
+    # cyclic encodings
+    df["month_sin"] = np.sin(2 * np.pi * df["month"] / 12)
+    df["month_cos"] = np.cos(2 * np.pi * df["month"] / 12)
+    df["dow_sin"] = np.sin(2 * np.pi * df["dayofweek"] / 7)
+    df["dow_cos"] = np.cos(2 * np.pi * df["dayofweek"] / 7)
+    return df
+
+
+def build_lifecycle_maps(train_df: pd.DataFrame):
+    """Compute per-menu lifecycle statistics from training data."""
+    life = {}
+    grouped = train_df[train_df["매출수량"] > 0].groupby("영업장명_메뉴명")
+    first_sale = grouped["영업일자"].min()
+    last_sale = grouped["영업일자"].max()
+    avg_sales = grouped["매출수량"].mean()
+    peak_month = grouped.apply(lambda g: g.groupby(g["영업일자"].dt.month)["매출수량"].sum().idxmax())
+
+    for menu in train_df["영업장명_메뉴명"].unique():
+        fs = first_sale.get(menu, pd.NaT)
+        ls = last_sale.get(menu, pd.NaT)
+        am = float(avg_sales.get(menu, 0.0))
+        pm = int(peak_month.get(menu, 6)) if not pd.isna(peak_month.get(menu, np.nan)) else 6
+        pattern = "regular"
+        if pd.notna(fs) and fs >= pd.Timestamp("2023-06-01"):
+            pattern = "new_menu"
+        if pd.notna(ls) and ls <= pd.Timestamp("2024-01-31"):
+            pattern = "possibly_discontinued"
+        life[menu] = {
+            "first_sale": fs,
+            "last_sale": ls,
+            "avg_sales": am,
+            "peak_month": pm,
+            "pattern": pattern,
+        }
+    return life
+
+
+def add_group_lag_features(df: pd.DataFrame, value_col: str = "매출수량") -> pd.DataFrame:
+    df = df.sort_values(["영업장명_메뉴명", "영업일자"]).copy()
+    group = df.groupby("영업장명_메뉴명", group_keys=False)
+    for lag in [1, 7, 14, 28]:
+        df[f"lag_{lag}"] = group[value_col].shift(lag)
+    for win in [7, 14, 28]:
+        df[f"ma_{win}"] = group[value_col].shift(1).rolling(win, min_periods=1).mean()
+    df["change_rate_7"] = (df[value_col] - df["lag_7"]) / (df["lag_7"].replace(0, np.nan))
+    df["change_rate_7"] = df["change_rate_7"].replace([np.inf, -np.inf], 0).fillna(0)
+    return df
+
+
+def add_static_features(df: pd.DataFrame, lifecycle_map: dict) -> pd.DataFrame:
+    df = df.copy()
+    df["영업장명"] = df["영업장명_메뉴명"].str.split("_").str[0]
+    # lifecycle encodings
+    fs_month = []
+    peak_month = []
+    new_flag = []
+    disc_flag = []
+    for m in df["영업장명_메뉴명"].values:
+        info = lifecycle_map.get(m, None)
+        if info is None:
+            fs_month.append(0)
+            peak_month.append(6)
+            new_flag.append(0)
+            disc_flag.append(0)
+        else:
+            fs_month.append(0 if pd.isna(info["first_sale"]) else int(info["first_sale"].month))
+            peak_month.append(int(info["peak_month"]))
+            new_flag.append(1 if info["pattern"] == "new_menu" else 0)
+            disc_flag.append(1 if info["pattern"] == "possibly_discontinued" else 0)
+    df["first_sale_month"] = fs_month
+    df["peak_month"] = peak_month
+    df["is_new_menu"] = new_flag
+    df["is_discontinued"] = disc_flag
+    return df
+
+
+def make_features(df: pd.DataFrame, lifecycle_map: dict) -> pd.DataFrame:
+    df = parse_date(df)
+    df = add_date_features(df)
+    df = add_group_lag_features(df)
+    df = add_static_features(df, lifecycle_map)
+    # Clean
+    num_cols = df.select_dtypes(include=[np.number]).columns
+    df[num_cols] = df[num_cols].replace([np.inf, -np.inf], 0).fillna(0)
+    return df
+
+
+# -------------------------------
+# Load train and build model
+# -------------------------------
+
+def train_model() -> tuple:
+    print("[INFO] Loading train data ...")
+    train_df = pd.read_csv(TRAIN_PATH)
+    train_df = parse_date(train_df)
+
+    lifecycle_map = build_lifecycle_maps(train_df)
+
+    # Build features
+    train_feat = make_features(train_df, lifecycle_map)
+
+    feature_cols = [
+        # time
+        "year", "month", "day", "dayofweek", "is_weekend", "quarter", "weekofyear", "dayofyear",
+        "month_sin", "month_cos", "dow_sin", "dow_cos",
+        # lags & rolls
+        "lag_1", "lag_7", "lag_14", "lag_28",
+        "ma_7", "ma_14", "ma_28", "change_rate_7",
+        # static
+        "영업장명_메뉴명", "영업장명", "first_sale_month", "peak_month", "is_new_menu", "is_discontinued",
+    ]
+
+    # Drop rows without sufficient history
+    train_feat = train_feat.dropna(subset=["lag_1", "lag_7"]).copy()
+
+    X = train_feat[feature_cols]
+    y = train_feat["매출수량"].astype(float)
+
+    # Build sample weights: downweight zero actuals (ignored in LB), upweight key venues
+    venue = train_feat["영업장명"].astype(str)
+    w = np.where(y <= 0, 0.1, 1.0)  # zero actuals contribute less
+    vboost = np.where(venue.str.contains("담하|미라시아"), 2.0, 1.0)
+    sample_weight = w * vboost
+
+    # Use log1p target for more stable training on counts
+    y_train = np.log1p(y.clip(lower=0))
+
+    # AutoML settings (use holdout split without shuffling)
+    run_tag = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_dir = os.path.join(OUTPUT_DIR, f"mljar_results_{run_tag}")
+    automl = AutoML(
+        results_path=results_dir,
+        mode="Compete",
+        algorithms=["LightGBM", "CatBoost"],
+        eval_metric="mae",
+        total_time_limit=60 * 20,  # 20 minutes cap
+        model_time_limit=60 * 3,
+        validation_strategy={
+            "validation_type": "split",   # holdout split
+            "train_ratio": 0.85,
+            "shuffle": False,
+        },
+        random_state=42,
+    )
+
+    print("[INFO] Training AutoML model ...")
+    automl.fit(X, y_train, sample_weight=sample_weight)
+
+    # Persist small config used for inference
+    cfg = {
+        "feature_cols": feature_cols,
+        "use_log1p": True,
+    }
+    with open(os.path.join(OUTPUT_DIR, "mljar_inference_config.json"), "w", encoding="utf-8") as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
+
+    return automl, lifecycle_map, feature_cols
+
+
+# -------------------------------
+# Forecasting utilities
+# -------------------------------
+
+def build_future_row(menu: str, future_date: pd.Timestamp, history: pd.DataFrame, lifecycle_map: dict) -> pd.DataFrame:
+    """Construct one-row dataframe of features for a specific menu & date using history (which contains 매출수량).
+    history must contain rows for this menu with columns: 영업일자, 매출수량.
+    """
+    hist = history[history["영업장명_메뉴명"] == menu].sort_values("영업일자").copy()
+    row = {
+        "영업일자": future_date,
+        "영업장명_메뉴명": menu,
+    }
+    tmp = pd.DataFrame([row])
+    tmp = parse_date(tmp)
+    tmp = add_date_features(tmp)
+
+    # lags from history
+    def get_lag(days: int):
+        target_day = future_date - timedelta(days=days)
+        v = hist.loc[hist["영업일자"] == target_day, "매출수량"]
+        return float(v.values[0]) if len(v) > 0 else np.nan
+
+    for lag in [1, 7, 14, 28]:
+        tmp[f"lag_{lag}"] = get_lag(lag)
+
+    # rolling means
+    for win in [7, 14, 28]:
+        past_start = future_date - timedelta(days=win)
+        mask = (hist["영업일자"] < future_date) & (hist["영업일자"] >= past_start)
+        vals = hist.loc[mask, "매출수량"].astype(float).values
+        tmp[f"ma_{win}"] = float(np.mean(vals)) if len(vals) > 0 else np.nan
+
+    # change rate vs 7 days ago
+    lag7 = tmp["lag_7"].values[0]
+    last = tmp["lag_1"].values[0]
+    if pd.isna(lag7) or lag7 == 0:
+        tmp["change_rate_7"] = 0.0
+    else:
+        tmp["change_rate_7"] = float((last - lag7) / lag7)
+
+    # static features
+    tmp["영업장명"] = menu.split("_")[0]
+    info = lifecycle_map.get(menu, None)
+    if info is None:
+        tmp["first_sale_month"] = 0
+        tmp["peak_month"] = 6
+        tmp["is_new_menu"] = 0
+        tmp["is_discontinued"] = 0
+    else:
+        tmp["first_sale_month"] = 0 if pd.isna(info["first_sale"]) else int(info["first_sale"].month)
+        tmp["peak_month"] = int(info["peak_month"]) if not pd.isna(info["peak_month"]) else 6
+        tmp["is_new_menu"] = 1 if info["pattern"] == "new_menu" else 0
+        tmp["is_discontinued"] = 1 if info["pattern"] == "possibly_discontinued" else 0
+
+    # Clean
+    num_cols = tmp.select_dtypes(include=[np.number]).columns
+    tmp[num_cols] = tmp[num_cols].replace([np.inf, -np.inf], np.nan).fillna(0)
+    return tmp
+
+
+def forecast_7_days(automl: AutoML, lifecycle_map: dict, feature_cols: list, test_csv_path: str) -> dict:
+    """Return dict: {menu: [7 preds]} for one TEST file."""
+    df = pd.read_csv(test_csv_path)
+    df = parse_date(df)
+
+    # Build initial history from provided test file (assumed last 28 days of actuals)
+    history = df[["영업일자", "영업장명_메뉴명", "매출수량"]].copy()
+
+    preds_per_menu = {}
+    menus = sorted(df["영업장명_메뉴명"].unique())
+
+    last_date = history["영업일자"].max()
+    for menu in menus:
+        preds = []
+        # We copy history per menu to update iteratively
+        menu_hist = history[history["영업장명_메뉴명"] == menu].copy()
+        for step in range(1, 8):
+            future_date = last_date + timedelta(days=step)
+            feat_row = build_future_row(menu, future_date, menu_hist, lifecycle_map)
+            Xf = feat_row[feature_cols].copy()
+            yhat_log = float(automl.predict(Xf)[0])
+            # inverse transform from log1p
+            yhat = np.expm1(yhat_log)
+            # Business constraints: clip >= 0 and round to int
+            yhat = int(max(0, round(yhat)))
+            preds.append(yhat)
+            # Append to history for next step
+            menu_hist = pd.concat([
+                menu_hist,
+                pd.DataFrame({
+                    "영업일자": [future_date],
+                    "영업장명_메뉴명": [menu],
+                    "매출수량": [yhat],
+                })
+            ], ignore_index=True)
+        preds_per_menu[menu] = preds
+    return preds_per_menu
+
+
+# -------------------------------
+# Submission builder
+# -------------------------------
+
+def build_submission(all_test_preds: dict) -> pd.DataFrame:
+    sample = pd.read_csv(SAMPLE_SUB_PATH)
+    sub = sample.copy()
+    # Fill using mapping from test file name to rows in sample
+    # sample index like: TEST_00+1일 ... TEST_09+7일
+    for test_id, menu_to_preds in all_test_preds.items():
+        for day in range(1, 8):
+            row_label = f"{test_id}+{day}일"
+            if row_label in sub["영업일자"].values:
+                ridx = sub.index[sub["영업일자"] == row_label][0]
+                for menu, preds in menu_to_preds.items():
+                    if menu in sub.columns:
+                        sub.at[ridx, menu] = int(preds[day - 1])
+    # Ensure integers and non-negative
+    for c in sub.columns:
+        if c == "영업일자":
+            continue
+        sub[c] = sub[c].fillna(0).astype(float).clip(lower=0).round().astype(int)
+    return sub
+
+
+def main():
+    start = time.time()
+    print("[STEP] Training with mljar-supervised ...")
+    automl, lifecycle_map, feature_cols = train_model()
+
+    print("[STEP] Forecasting 7 days for each TEST file ...")
+    all_test_preds = {}
+    test_files = sorted(glob.glob(os.path.join(TEST_DIR, "TEST_*.csv")))
+    for tf in test_files:
+        test_id = os.path.splitext(os.path.basename(tf))[0]  # e.g., TEST_00
+        print(f"  - Predicting for {test_id} ...")
+        menu_preds = forecast_7_days(automl, lifecycle_map, feature_cols, tf)
+        all_test_preds[test_id] = menu_preds
+
+    print("[STEP] Building submission ...")
+    sub = build_submission(all_test_preds)
+    out_path = os.path.join(OUTPUT_DIR, f"submission_mljar_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+    sub.to_csv(out_path, index=False)
+    print(f"[DONE] Submission saved: {out_path}")
+    print(f"[INFO] Elapsed: {(time.time()-start)/60:.1f} min")
+
+
+if __name__ == "__main__":
+    main()
