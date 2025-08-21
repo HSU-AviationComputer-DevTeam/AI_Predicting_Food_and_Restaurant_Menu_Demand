@@ -1,0 +1,122 @@
+{
+    "uid": "1b3a5c30-dcb0-455e-b5ff-febffcf94be5",
+    "name": "36_CatBoost",
+    "preprocessing": [
+        {
+            "remove_columns": [
+                "is_discontinued"
+            ],
+            "scale_y": {
+                "scale": [
+                    1.2622974459452159
+                ],
+                "mean": [
+                    0.8955191279763282
+                ],
+                "var": [
+                    1.5933948420398154
+                ],
+                "n_samples_seen": 91713,
+                "n_features_in": 1,
+                "columns": [
+                    "target"
+                ],
+                "scale_method": "scale_normal"
+            },
+            "ml_task": "regression",
+            "params": {
+                "columns_preprocessing": {
+                    "is_discontinued": [
+                        "remove_column"
+                    ]
+                },
+                "target_preprocessing": [
+                    "na_exclude",
+                    "scale_normal"
+                ],
+                "ml_task": "regression"
+            }
+        }
+    ],
+    "learners": [
+        {
+            "library_version": "1.2.8",
+            "algorithm_name": "CatBoost",
+            "algorithm_short_name": "CatBoost",
+            "uid": "0a92bb19-6ea4-44b5-829c-8638b76141d0",
+            "params": {
+                "model_type": "CatBoost",
+                "ml_task": "regression",
+                "n_jobs": -1,
+                "seed": 43,
+                "learning_rate": 0.1,
+                "depth": 8,
+                "rsm": 0.8,
+                "loss_function": "RMSE",
+                "eval_metric": "MAE",
+                "explain_level": 0
+            },
+            "name": "learner_fold_0",
+            "best_ntree_limit": 61
+        }
+    ],
+    "params": {
+        "additional": {
+            "max_rounds": 10000,
+            "early_stopping_rounds": 50,
+            "max_rows_limit": null,
+            "max_cols_limit": null
+        },
+        "preprocessing": {
+            "columns_preprocessing": {
+                "is_discontinued": [
+                    "remove_column"
+                ]
+            },
+            "target_preprocessing": [
+                "na_exclude",
+                "scale_normal"
+            ],
+            "ml_task": "regression"
+        },
+        "validation_strategy": {
+            "validation_type": "split",
+            "train_ratio": 0.9,
+            "shuffle": false,
+            "X_path": "C:\\GitHubRepo\\AI_Forecasting_Food_and_Restaurant_Menu_Demand\\mljar_results\\mljar_20250821_215422\\h4\\X.data",
+            "y_path": "C:\\GitHubRepo\\AI_Forecasting_Food_and_Restaurant_Menu_Demand\\mljar_results\\mljar_20250821_215422\\h4\\y.data",
+            "results_path": "C:\\GitHubRepo\\AI_Forecasting_Food_and_Restaurant_Menu_Demand\\mljar_results\\mljar_20250821_215422\\h4",
+            "sample_weight_path": "C:\\GitHubRepo\\AI_Forecasting_Food_and_Restaurant_Menu_Demand\\mljar_results\\mljar_20250821_215422\\h4\\sample_weight.data"
+        },
+        "learner": {
+            "model_type": "CatBoost",
+            "ml_task": "regression",
+            "n_jobs": -1,
+            "seed": 43,
+            "learning_rate": 0.1,
+            "depth": 8,
+            "rsm": 0.8,
+            "loss_function": "RMSE",
+            "eval_metric": "MAE",
+            "explain_level": 0
+        },
+        "automl_random_state": 42,
+        "ml_task": "regression",
+        "explain_level": 0,
+        "name": "36_CatBoost",
+        "status": "initialized",
+        "final_loss": null,
+        "train_time": null,
+        "data_type": "original",
+        "max_time_for_learner": 3000.0
+    },
+    "saved": [
+        "36_CatBoost\\learner_fold_0.catboost"
+    ],
+    "predictions_fname": "36_CatBoost\\predictions_validation.csv",
+    "metric_name": "mae",
+    "final_loss": "0.8080686989192835",
+    "train_time": 10.066348791122437,
+    "is_stacked": false,
+    "joblib_version": "1.5.1"
+}
